@@ -4,7 +4,14 @@ from fastapi.responses import JSONResponse
 import numpy as np
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 DATA = [
   {"region":"apac","latency_ms":191.08,"uptime_pct":99.097},{"region":"apac","latency_ms":122.25,"uptime_pct":98.488},{"region":"apac","latency_ms":159.14,"uptime_pct":98.917},{"region":"apac","latency_ms":136.95,"uptime_pct":99.096},{"region":"apac","latency_ms":152.38,"uptime_pct":98.815},{"region":"apac","latency_ms":147.09,"uptime_pct":98.687},{"region":"apac","latency_ms":171.46,"uptime_pct":98.192},{"region":"apac","latency_ms":131.84,"uptime_pct":99.168},{"region":"apac","latency_ms":223.98,"uptime_pct":99.329},{"region":"apac","latency_ms":137.99,"uptime_pct":97.358},{"region":"apac","latency_ms":196.11,"uptime_pct":97.465},{"region":"apac","latency_ms":206.33,"uptime_pct":97.928},
@@ -30,4 +37,18 @@ async def analytics(request: Request):
             "avg_uptime": round(float(np.mean(upt)), 4),
             "breaches": int(sum(1 for l in lat if l > threshold))
         }
-    return JSONResponse(content=result)
+    return JSONResponse(
+        content=result,
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+@app.options("/api/analytics")
+async def options():
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
